@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics';
 import { destinationNames } from '../data/destinations';
 
 interface VotesResponse {
@@ -86,6 +87,7 @@ export function initVotes(): void {
         });
         if (!res.ok) throw new Error(`vote ${res.status}`);
         const data = (await res.json()) as VoteResponse;
+        track('vote_cast', { destination: dest });
         // Pull authoritative counts so the leader indicator stays in sync.
         if (data.configured) {
           await refresh();

@@ -9,6 +9,7 @@ import {
 import { feature } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import { track } from '@vercel/analytics';
 
 import { destinations, type Destination } from '../data/destinations';
 
@@ -166,6 +167,8 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     landed = null;
     spinBtn!.disabled = true;
 
+    track('spin_globe');
+
     const pick = destinations[Math.floor(Math.random() * destinations.length)]!;
 
     const targetLambda = -pick.coords[0];
@@ -191,6 +194,11 @@ export function initGlobe({ worldUrl }: InitOptions): void {
         renderPins();
         showModal(pick);
         baseLambda = ((lambda % 360) + 360) % 360;
+
+        track('spin_result', { destination: pick.name });
+        if (pick.isHometown) {
+          track('hometown_landed', { destination: pick.name });
+        }
       }
     }
     requestAnimationFrame(step);
@@ -236,6 +244,7 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     setTimeout(spin, 180);
   });
   modalLock.addEventListener('click', () => {
+    if (landed) track('modal_lock', { destination: landed.name });
     closeModal({ resume: false });
     spinBtn.disabled = false;
     spinning = false;

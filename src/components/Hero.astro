@@ -13,6 +13,13 @@
   <div class="hero-divider"></div>
 </section>
 
+<script>
+  import { track } from '@vercel/analytics';
+  document
+    .querySelector('.hero-cta')
+    ?.addEventListener('click', () => track('hero_cta_click'));
+</script>
+
 <style>
   #hero {
     min-height: 100vh;

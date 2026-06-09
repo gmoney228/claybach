@@ -39,5 +39,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://claybach.co
   </head>
   <body>
     <slot />
+
+    <script>
+      import { inject } from '@vercel/analytics';
+      import { injectSpeedInsights } from '@vercel/speed-insights';
+      inject();
+      injectSpeedInsights();
+    </script>
   </body>
 </html>
