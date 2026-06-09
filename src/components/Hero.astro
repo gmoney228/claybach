@@ -1,0 +1,105 @@
+---
+---
+<section id="hero">
+  <p class="hero-eyebrow">Est. August 28, 2026 &mdash; San Clemente, CA</p>
+  <h1 class="hero-title">
+    The <em>Clay Ashworth</em><br />Bachelor Party
+  </h1>
+  <p class="hero-subtitle">
+    We&rsquo;re picking the place. We&rsquo;re picking the date.<br />
+    Clay does not get a vote.
+  </p>
+  <a class="hero-cta" href="#globe-section">Pick a destination</a>
+  <div class="hero-divider"></div>
+</section>
+
+<style>
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    position: relative;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #1c1610 0%, #0e0d0b 70%);
+    max-width: none;
+    margin: 0;
+  }
+
+  #hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 80%, transparent 50%, #0e0d0b 100%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 28px;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--cream);
+    max-width: 820px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero-subtitle {
+    margin-top: 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(0.72rem, 1.8vw, 0.92rem);
+    color: var(--cream-dim);
+    font-style: italic;
+    letter-spacing: 0.04em;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  .hero-cta {
+    margin-top: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    text-decoration: none;
+    border-bottom: 1px solid var(--amber-dim);
+    padding-bottom: 6px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .hero-cta:hover {
+    color: var(--cream);
+    border-color: var(--cream);
+  }
+
+  .hero-cta::after {
+    content: '↓';
+  }
+
+  .hero-divider {
+    margin: 48px auto 0;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  }
+</style>

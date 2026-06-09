@@ -1,0 +1,381 @@
+---
+---
+<section id="globe-section">
+  <p class="section-label">01 &mdash; Pick the place</p>
+  <h2 class="section-title globe-title">
+    Spin the globe.<br /><em>Let it decide for us.</em>
+  </h2>
+
+  <div class="globe-stage" aria-label="World globe with four candidate destinations">
+    <svg id="globe-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <radialGradient id="sphereGradient" cx="38%" cy="35%" r="70%">
+          <stop offset="0%" stop-color="#2a2018" />
+          <stop offset="55%" stop-color="#141008" />
+          <stop offset="100%" stop-color="#070504" />
+        </radialGradient>
+        <radialGradient id="sphereHighlight" cx="35%" cy="30%" r="40%">
+          <stop offset="0%" stop-color="rgba(255,220,140,0.10)" />
+          <stop offset="100%" stop-color="rgba(255,220,140,0)" />
+        </radialGradient>
+      </defs>
+
+      <g id="globe-root">
+        <circle id="sphere-bg" class="globe-sphere-bg" cx="200" cy="200" r="170"></circle>
+        <path id="graticule" class="globe-graticule"></path>
+        <path id="land" class="globe-land"></path>
+        <g id="pins"></g>
+        <circle cx="200" cy="200" r="170" fill="url(#sphereHighlight)" pointer-events="none"></circle>
+      </g>
+    </svg>
+  </div>
+
+  <button class="spin-btn" id="spinBtn" type="button">
+    <span>Spin the wheel</span>
+  </button>
+  <p class="globe-hint">Final answer rendered in approx. 2 seconds.</p>
+</section>
+
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <p class="modal-eyebrow" id="modal-eyebrow">The wheel has spoken</p>
+    <p class="modal-dest" id="modal-dest"></p>
+    <p class="modal-line" id="modal-line"></p>
+
+    <div class="scouting-report" id="scouting-report" hidden>
+      <p class="scouting-title">Yakima &mdash; Scouting Report</p>
+      <div class="scouting-stats">
+        <div class="stat-row">
+          <span class="stat-label">Tools</span>
+          <span class="stat-value"><span class="star-filled">&#9733;&#9733;</span><span class="star-empty">&#9734;&#9734;&#9734;</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Vibes</span>
+          <span class="stat-value"><span class="star-filled">&#9733;</span><span class="star-empty">&#9734;&#9734;&#9734;&#9734;</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Nostalgia Factor</span>
+          <span class="stat-value"><span class="star-filled">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
+        </div>
+      </div>
+      <p class="scouting-notes">
+        <span class="notes-label">Notes:</span>
+        Subject has prior exposure to this market. Familiarity breeds contempt.
+        Recommend only if group enjoys Apple Cup energy and nostalgia-induced existential crises.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn" id="modal-respin" type="button">Spin again</button>
+      <button class="modal-btn primary" id="modal-lock" type="button">Lock it in</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initGlobe } from '../scripts/globe';
+  initGlobe({ worldUrl: '/land-110m.json' });
+</script>
+
+<style is:global>
+  /* Globe SVG internals — kept global because they target IDs the script touches. */
+  #globe-section { text-align: center; }
+
+  .globe-title {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 640px;
+  }
+
+  .globe-stage {
+    position: relative;
+    width: min(420px, 86vw);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto 36px;
+  }
+
+  .globe-stage::before {
+    content: '';
+    position: absolute;
+    inset: -8%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(196, 98, 45, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  #globe-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+  }
+
+  .globe-sphere-bg {
+    fill: url(#sphereGradient);
+    stroke: rgba(212, 146, 42, 0.18);
+    stroke-width: 0.6;
+  }
+
+  .globe-graticule {
+    fill: none;
+    stroke: rgba(212, 146, 42, 0.07);
+    stroke-width: 0.4;
+  }
+
+  .globe-land {
+    fill: #1f1a14;
+    stroke: #322a20;
+    stroke-width: 0.4;
+  }
+
+  .pin-ripple {
+    fill: var(--rust);
+    opacity: 0;
+    animation: pin-ripple 2.4s ease-out infinite;
+  }
+
+  @keyframes pin-ripple {
+    0%   { r: 2;  opacity: 0.7; }
+    100% { r: 14; opacity: 0;   }
+  }
+
+  .pin-dot {
+    fill: var(--rust);
+    stroke: #1a0f08;
+    stroke-width: 0.6;
+    filter: drop-shadow(0 0 4px rgba(196, 98, 45, 0.8));
+  }
+
+  .pin-dot.winner {
+    fill: var(--amber);
+    animation: winner-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes winner-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.35); }
+  }
+
+  .pin-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    fill: var(--amber);
+    text-transform: uppercase;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: #0e0d0b;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  .spin-btn {
+    display: inline-block;
+    padding: 16px 44px;
+    border: 1px solid var(--rust);
+    background: transparent;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spin-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--rust);
+    transform: translateX(-101%);
+    transition: transform 0.25s ease;
+    z-index: 0;
+  }
+
+  .spin-btn:hover::before { transform: translateX(0); }
+  .spin-btn:hover { color: #fff; }
+  .spin-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .spin-btn:disabled::before { transform: translateX(-101%); }
+  .spin-btn span { position: relative; z-index: 1; }
+
+  .globe-hint {
+    margin-top: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: #50473d;
+    text-transform: uppercase;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 7, 5, 0.88);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-box {
+    border: 1px solid var(--rust);
+    background: var(--bg2);
+    padding: 56px 48px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.open .modal-box { transform: translateY(0); }
+
+  .modal-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 14px;
+  }
+
+  .modal-eyebrow.hometown {
+    color: #0e0d0b;
+    background: var(--amber);
+    display: inline-block;
+    padding: 4px 10px 3px;
+    letter-spacing: 0.3em;
+  }
+
+  /* ── Scouting report card (Yakima only) ── */
+  .scouting-report {
+    margin: 28px auto 0;
+    padding: 22px 24px 20px;
+    border: 1px dashed var(--amber-dim);
+    background: rgba(0, 0, 0, 0.35);
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    color: var(--cream-dim);
+  }
+
+  .scouting-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    text-align: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scouting-stats {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 16px;
+    font-size: 0.72rem;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .stat-label {
+    color: var(--cream-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-label::after { content: ':'; }
+
+  .stat-value {
+    letter-spacing: 0.18em;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .star-filled { color: var(--amber); }
+  .star-empty  { color: #3a3530; }
+
+  .scouting-notes {
+    font-size: 0.7rem;
+    line-height: 1.7;
+    font-style: italic;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .notes-label {
+    color: var(--amber);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .modal-dest {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 900;
+    font-style: italic;
+    color: var(--cream);
+    margin-bottom: 24px;
+    line-height: 1.05;
+  }
+  .modal-dest em { color: var(--amber); font-style: italic; }
+
+  .modal-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--cream-dim);
+    line-height: 1.7;
+  }
+
+  .modal-actions {
+    margin-top: 36px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .modal-btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--cream-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+
+  .modal-btn:hover { border-color: var(--cream-dim); color: var(--cream); }
+
+  .modal-btn.primary {
+    border-color: var(--rust);
+    color: var(--cream);
+  }
+  .modal-btn.primary:hover { background: var(--rust); color: #fff; }
+
+  @media (max-width: 520px) {
+    .modal-box { padding: 44px 28px; }
+  }
+</style>

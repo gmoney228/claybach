@@ -1,0 +1,129 @@
+---
+import { destinations } from '../data/destinations';
+---
+
+<section id="vote-section">
+  <p class="section-label">01.5 &mdash; Cast your vote</p>
+  <h2 class="section-title vote-title">Where should it be?</h2>
+  <p class="vote-subtitle">Clay does not get a vote.</p>
+
+  <div class="vote-grid" id="vote-grid">
+    {destinations.map((d) => (
+      <button class="vote-btn" type="button" data-dest={d.name} data-leading="false">
+        <span class="vote-name">{d.name}</span>
+        <span class="vote-meta">
+          <span class="vote-count" aria-label={`votes for ${d.name}`}>0</span>
+          {d.name === 'Yakima' && (
+            <span class="vote-suspicious">&mdash; suspiciously high</span>
+          )}
+        </span>
+      </button>
+    ))}
+  </div>
+</section>
+
+<script>
+  import { initVotes } from '../scripts/votes';
+  initVotes();
+</script>
+
+<style>
+  #vote-section {
+    text-align: center;
+  }
+
+  .vote-title {
+    margin-bottom: 14px;
+  }
+
+  .vote-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--cream-dim);
+    font-style: italic;
+    margin-bottom: 36px;
+  }
+
+  .vote-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .vote-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.18s, background 0.18s, color 0.18s;
+    min-height: 64px;
+  }
+
+  .vote-btn:hover {
+    border-color: var(--amber);
+    background: rgba(212, 146, 42, 0.05);
+  }
+
+  .vote-btn:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  .vote-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .vote-name {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .vote-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .vote-count {
+    color: var(--amber);
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+
+  .vote-suspicious {
+    display: none;
+    color: var(--amber);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .vote-btn[data-dest='Yakima'][data-leading='true'] {
+    border-color: var(--amber);
+  }
+
+  .vote-btn[data-dest='Yakima'][data-leading='true'] .vote-suspicious {
+    display: inline;
+  }
+
+  @media (max-width: 520px) {
+    .vote-grid { grid-template-columns: 1fr; }
+  }
+</style>

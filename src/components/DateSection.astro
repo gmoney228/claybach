@@ -1,0 +1,95 @@
+---
+---
+<section id="date-section">
+  <p class="section-label">02 &mdash; Lock the date</p>
+  <div class="countdown-display">
+    <span class="t-label">T&ndash;Minus</span>
+    <span class="t-value">???</span>
+    <span class="t-label t-label-units">days</span>
+  </div>
+
+  <div class="decision-progress" role="progressbar" aria-valuenow="4" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-label">
+      <span>Decision progress</span>
+      <span class="progress-pct">04%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #date-section {
+    text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 88px 24px;
+    max-width: none;
+    margin: 0;
+  }
+
+  .countdown-display {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .countdown-display .t-label {
+    font-size: 0.4em;
+    font-family: 'DM Mono', monospace;
+    color: var(--amber);
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .countdown-display .t-value { color: var(--rust); }
+
+  .countdown-display .t-label-units {
+    font-size: 0.25em;
+    margin-top: 12px;
+    letter-spacing: 0.3em;
+  }
+
+  .decision-progress {
+    margin: 44px auto 0;
+    max-width: 440px;
+    text-align: left;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 10px;
+  }
+
+  .progress-pct {
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.15em;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    width: 4%;
+    height: 100%;
+    background: var(--amber);
+  }
+</style>
