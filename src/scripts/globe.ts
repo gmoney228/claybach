@@ -74,6 +74,23 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     const g = document.createElementNS(SVG_NS, 'g');
     g.setAttribute('class', 'pin');
 
+    const [lx, ly] = d.labelOffset;
+    // Leader line starts just outside the dot edge and ends just shy of the text.
+    const len = Math.hypot(lx, ly);
+    const inset = 3.5;   // pixels from pin center → line starts past the dot
+    const outset = 3;    // pixels short of label start → leaves a small gap
+    const sx = (lx / len) * inset;
+    const sy = (ly / len) * inset;
+    const ex = lx - (lx / len) * outset;
+    const ey = ly - (ly / len) * outset;
+
+    const leader = document.createElementNS(SVG_NS, 'line');
+    leader.setAttribute('class', 'pin-leader');
+    leader.setAttribute('x1', String(sx));
+    leader.setAttribute('y1', String(sy));
+    leader.setAttribute('x2', String(ex));
+    leader.setAttribute('y2', String(ey));
+
     const ripple = document.createElementNS(SVG_NS, 'circle');
     ripple.setAttribute('class', 'pin-ripple');
     ripple.setAttribute('cx', '0');
@@ -83,14 +100,16 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     dot.setAttribute('class', 'pin-dot');
     dot.setAttribute('cx', '0');
     dot.setAttribute('cy', '0');
-    dot.setAttribute('r', '4');
+    dot.setAttribute('r', '3.2');
 
     const label = document.createElementNS(SVG_NS, 'text');
     label.setAttribute('class', 'pin-label');
-    label.setAttribute('x', '8');
-    label.setAttribute('y', '3');
+    label.setAttribute('x', String(lx));
+    label.setAttribute('y', String(ly));
+    label.setAttribute('text-anchor', d.labelAnchor);
     label.textContent = d.name.toUpperCase();
 
+    g.appendChild(leader);
     g.appendChild(ripple);
     g.appendChild(dot);
     g.appendChild(label);
