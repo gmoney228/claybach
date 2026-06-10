@@ -23,11 +23,11 @@ import { TRIP } from '../data/trip';
       </defs>
 
       <g id="globe-root">
-        <circle id="sphere-bg" class="globe-sphere-bg" cx="200" cy="200" r="170"></circle>
+        <circle id="sphere-bg" class="globe-sphere-bg" cx="200" cy="200" r="320"></circle>
         <path id="graticule" class="globe-graticule"></path>
         <path id="land" class="globe-land"></path>
         <g id="pins"></g>
-        <circle cx="200" cy="200" r="170" fill="url(#sphereHighlight)" pointer-events="none"></circle>
+        <circle cx="200" cy="200" r="320" fill="url(#sphereHighlight)" pointer-events="none"></circle>
       </g>
     </svg>
   </div>
@@ -35,7 +35,7 @@ import { TRIP } from '../data/trip';
   <button class="spin-btn" id="spinBtn" type="button">
     <span>Why CDA won</span>
   </button>
-  <p class="globe-hint">Spin the globe. Same answer every time.</p>
+  <p class="globe-hint">The decision is on the map.</p>
 </section>
 
 <div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
@@ -72,8 +72,8 @@ import { TRIP } from '../data/trip';
     </div>
 
     <div class="modal-actions">
-      <button class="modal-btn" id="modal-respin" type="button">Spin again</button>
-      <button class="modal-btn primary" id="modal-lock" type="button">Confirmed</button>
+      <button class="modal-btn" id="modal-respin" type="button">Close</button>
+      <button class="modal-btn primary" id="modal-lock" type="button">Locked in</button>
     </div>
   </div>
 </div>

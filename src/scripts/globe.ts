@@ -22,9 +22,9 @@ interface InitOptions {
 /**
  * Boots the orthographic globe inside the markup rendered by GlobeSection.astro.
  *
- * Post-decision behavior: the winning destination is highlighted permanently,
- * losing destinations stay dimmed on the globe, and the "spin" button always
- * lands on the winner and opens a Field Intel card.
+ * Post-decision behavior: the globe is statically locked on the winning
+ * destination (zoomed in, no idle rotation). The "Why CDA won" button just
+ * opens the Field Intel modal — there is no spin animation anymore.
  */
 export function initGlobe({ worldUrl }: InitOptions): void {
   const svg     = document.getElementById('globe-svg');
@@ -55,20 +55,20 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     console.warn('[globe] winning destination not found in dataset');
   }
 
+  // Lock the globe on the winning destination — no idle rotation, no spin.
+  const lockLon = winner ? -winner.coords[0] : 110;
+  const lockLat = winner ? -winner.coords[1] : -25;
+
   const projection: GeoProjection = geoOrthographic()
-    .scale(170)
+    .scale(320)
     .translate([200, 200])
     .clipAngle(90)
-    .rotate([110, -25]);
+    .rotate([lockLon, lockLat]);
 
   const pathGen: GeoPath = geoPath(projection);
   const graticule = geoGraticule10();
 
   let landFeatures: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
-  let spinning = false;
-  let baseLambda = 110;
-  const basePhi = -25;
-  let lastTs: number | null = null;
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const pinNodes = new Map<string, {
@@ -162,7 +162,7 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     }
   }
 
-  // Fetch the world topology once, then start rendering.
+  // Fetch the world topology once, then render the locked view.
   fetch(worldUrl)
     .then((r) => r.json() as Promise<Topology<{ land: GeometryCollection }>>)
     .then((world) => {
@@ -174,60 +174,11 @@ export function initGlobe({ worldUrl }: InitOptions): void {
       render();
     });
 
-  // Slow continuous polar-axis rotation.
-  function tick(ts: number): void {
-    if (lastTs == null) lastTs = ts;
-    const dt = ts - lastTs;
-    lastTs = ts;
-
-    if (!spinning) {
-      baseLambda = (baseLambda + dt * 0.006) % 360;
-      projection.rotate([baseLambda, basePhi]);
-      render();
-    }
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-
-  function easeOutCubic(t: number): number {
-    return 1 - Math.pow(1 - t, 3);
-  }
-
-  // Post-decision: spin always lands on the winner.
-  function spin(): void {
-    if (spinning || !winner) return;
-    spinning = true;
-    spinBtn!.disabled = true;
-
-    track('spin_globe');
-
-    const targetLambda = -winner.coords[0];
-    const startLambda = projection.rotate()[0];
-
-    let lambdaDelta = (((targetLambda - startLambda) % 360) + 360) % 360;
-    lambdaDelta += 720;
-
-    const duration = 2400;
-    const startTs = performance.now();
-
-    function step(now: number): void {
-      const t = Math.min((now - startTs) / duration, 1);
-      const eased = easeOutCubic(t);
-      const lambda = startLambda + lambdaDelta * eased;
-      projection.rotate([lambda, basePhi]);
-      render();
-
-      if (t < 1) {
-        requestAnimationFrame(step);
-      } else {
-        renderPins();
-        showModal(winner!);
-        baseLambda = ((lambda % 360) + 360) % 360;
-
-        track('spin_result', { destination: winner!.name });
-      }
-    }
-    requestAnimationFrame(step);
+  // Open the Field Intel modal directly — no animation, the answer is already on screen.
+  function revealIntel(): void {
+    if (!winner) return;
+    track('intel_open', { destination: winner.name });
+    showModal(winner);
   }
 
   function showModal(pick: Destination): void {
@@ -243,32 +194,21 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     document.body.style.overflow = 'hidden';
   }
 
-  function closeModal({ resume = true } = {}): void {
+  function closeModal(): void {
     modal!.classList.remove('open');
     document.body.style.overflow = '';
-    if (resume) {
-      spinning = false;
-      spinBtn!.disabled = false;
-      lastTs = null;
-    }
   }
 
-  spinBtn.addEventListener('click', spin);
+  spinBtn.addEventListener('click', revealIntel);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
   });
-  modalRespin.addEventListener('click', () => {
-    closeModal();
-    setTimeout(spin, 180);
-  });
+  modalRespin.addEventListener('click', closeModal);
   modalLock.addEventListener('click', () => {
     if (winner) track('modal_lock', { destination: winner.name });
-    closeModal({ resume: false });
-    spinBtn.disabled = false;
-    spinning = false;
-    lastTs = null;
+    closeModal();
   });
 }
