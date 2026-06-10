@@ -17,7 +17,7 @@ export const crew: CrewMember[] = [
     status: 'Subject',
     role: 'Groom \u00b7 the reason any of us are flying',
     intel:
-      'Cigarette fiend. Will bum one off you within an hour of arrival. He has a pack. He will still ask for yours.',
+      'Not actually a smoker. Once the drinks come out, though, the room starts chanting his name \u2014 and somehow a cigarette always shows up next to him.',
     subject: true,
   },
   {
@@ -37,9 +37,8 @@ export const crew: CrewMember[] = [
   {
     name: 'Seth',
     status: 'Veteran',
-    role: 'College OG \u00b7 new father',
-    intel:
-      'Tenure runs back to before any of us. Arrives on three hours of sleep, outlasts the room anyway. Holds the canonical version of every old story.',
+    role: 'College OG \u00b7 new father as of July',
+    intel: 'College OG. New father as of July.',
   },
   {
     name: 'James',
