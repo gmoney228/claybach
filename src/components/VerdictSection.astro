@@ -1,0 +1,250 @@
+---
+import { destinations } from '../data/destinations';
+import { partyDates } from '../data/dates';
+import { TRIP } from '../data/trip';
+
+const winningDest = TRIP.winningDestinationName;
+const winningDate = TRIP.winningDateId;
+
+const winningDateLabel = partyDates.find((d) => d.id === winningDate)?.label ?? '';
+---
+
+<section id="verdict-section">
+  <p class="section-label">Final &mdash; voting closed 7.24.2026</p>
+  <h2 class="section-title verdict-title">The verdict.</h2>
+
+  <div class="verdict-grid">
+    <!-- ── Destination panel ───────────────────────── -->
+    <article class="verdict-panel" data-panel="destination">
+      <header class="verdict-panel-header">
+        <span class="verdict-panel-label">Destination</span>
+        <span class="verdict-panel-meta" data-total-votes>&mdash;</span>
+      </header>
+
+      <div class="verdict-winner">
+        <span class="verdict-winner-name">{winningDest}</span>
+        <span class="verdict-winner-stamp">Winner</span>
+      </div>
+
+      <ul class="verdict-list">
+        {destinations.map((d) => (
+          <li
+            class="verdict-row"
+            data-dest={d.name}
+            data-winner={d.name === winningDest ? 'true' : 'false'}
+          >
+            <span class="verdict-row-name">{d.name}</span>
+            <span class="verdict-row-count" data-count>0</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+
+    <!-- ── Weekend panel ───────────────────────────── -->
+    <article class="verdict-panel" data-panel="weekend">
+      <header class="verdict-panel-header">
+        <span class="verdict-panel-label">Weekend</span>
+        <span class="verdict-panel-meta">Fri 7.24 &rarr; Sun 7.26</span>
+      </header>
+
+      <div class="verdict-winner">
+        <span class="verdict-winner-name">{winningDateLabel} weekend</span>
+        <span class="verdict-winner-stamp">Winner</span>
+      </div>
+
+      <ul class="verdict-list">
+        {partyDates.map((d) => (
+          <li
+            class="verdict-row"
+            data-date={d.id}
+            data-winner={d.id === winningDate ? 'true' : 'false'}
+          >
+            <span class="verdict-row-name">{d.label}</span>
+            <span class="verdict-row-voters" data-voters></span>
+            <span class="verdict-row-count" data-count>0</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+  </div>
+</section>
+
+<script>
+  import { initVerdict } from '../scripts/verdict';
+  initVerdict();
+</script>
+
+<style>
+  #verdict-section {
+    max-width: 1080px;
+  }
+
+  .verdict-title {
+    text-align: center;
+  }
+
+  .verdict-title::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent);
+    margin: 18px auto 0;
+  }
+
+  /* ── Grid of two panels ─────────────────────────── */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 760px) {
+    .verdict-grid { grid-template-columns: 1fr; }
+  }
+
+  .verdict-panel {
+    border: 1px solid var(--border);
+    padding: 28px;
+    background: rgba(255, 255, 255, 0.012);
+  }
+
+  .verdict-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .verdict-panel-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .verdict-panel-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--cream-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Winner row (big stamped name) ─────────────── */
+  .verdict-winner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .verdict-winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+  }
+
+  .verdict-winner-stamp {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rust);
+    border: 1px solid var(--rust);
+    padding: 4px 8px;
+    /* Slight rotation gives the rubber-stamp impression. */
+    transform: rotate(-3deg);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* ── Tally list ────────────────────────────────── */
+  .verdict-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .verdict-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .verdict-row:last-child {
+    border-bottom: none;
+  }
+
+  /* Destination panel has no voters column, collapse it. */
+  [data-panel='destination'] .verdict-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .verdict-row-name {
+    color: var(--cream-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .verdict-row-voters {
+    color: var(--cream-dim);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    opacity: 0.6;
+    text-align: left;
+    word-break: break-word;
+  }
+
+  .verdict-row-voters:empty::before {
+    content: '\u2014';
+    opacity: 0.4;
+  }
+
+  .verdict-row-count {
+    color: var(--cream-dim);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* ── Winner row styling ────────────────────────── */
+  .verdict-row[data-winner='true'] .verdict-row-name {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  .verdict-row[data-winner='true'] .verdict-row-voters {
+    color: var(--cream);
+    opacity: 1;
+  }
+
+  .verdict-row[data-winner='true'] .verdict-row-count {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  /* ── Loser row styling (struck-through dimmer) ─── */
+  .verdict-row[data-winner='false'] .verdict-row-name {
+    text-decoration: line-through;
+    text-decoration-color: rgba(122, 117, 108, 0.45);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 760px) {
+    .verdict-panel { padding: 22px; }
+  }
+</style>

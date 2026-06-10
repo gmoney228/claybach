@@ -1,0 +1,222 @@
+---
+import { bingoTiles, BINGO_FREE_INDEX } from '../data/bingo';
+---
+
+<section id="bingo-section" data-bingo="false">
+  <p class="section-label">05 &mdash; The card</p>
+  <h2 class="section-title bingo-title">
+    Bach bingo. <em>Mark as it happens.</em>
+  </h2>
+  <p class="bingo-instructions">
+    Tap a square when it goes down. Five in a row wins eternal bragging rights and exactly nothing else.
+  </p>
+
+  <div class="bingo-card">
+    <div class="bingo-grid">
+      {bingoTiles.map((tile, idx) => (
+        <button
+          type="button"
+          class="bingo-cell"
+          data-idx={idx}
+          data-marked={idx === BINGO_FREE_INDEX ? 'true' : 'false'}
+          data-free={idx === BINGO_FREE_INDEX ? 'true' : 'false'}
+          aria-pressed={idx === BINGO_FREE_INDEX ? 'true' : 'false'}
+        >
+          <span class="bingo-cell-text">{tile}</span>
+          <span class="bingo-cell-stamp" aria-hidden="true">X</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="bingo-card-footer">
+      <span class="bingo-status">
+        <span class="bingo-status-live">BINGO</span>
+        <span class="bingo-status-idle">Waiting on the crew</span>
+      </span>
+      <button type="button" id="bingo-reset" class="bingo-reset">Clear card</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initBingo } from '../scripts/bingo';
+  initBingo();
+</script>
+
+<style>
+  #bingo-section {
+    max-width: 880px;
+    text-align: center;
+  }
+
+  .bingo-title {
+    margin-bottom: 14px;
+  }
+
+  .bingo-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .bingo-instructions {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--cream-dim);
+    font-style: italic;
+    margin-bottom: 36px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .bingo-card {
+    border: 1px solid var(--border);
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.012);
+  }
+
+  /* ── 5x5 grid ─────────────────────────────────── */
+  .bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .bingo-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    padding: 8px 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    overflow: hidden;
+  }
+
+  .bingo-cell:hover {
+    border-color: var(--amber-dim);
+    background: rgba(212, 146, 42, 0.04);
+  }
+
+  .bingo-cell:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: -2px;
+  }
+
+  .bingo-cell-text {
+    position: relative;
+    z-index: 2;
+    word-break: break-word;
+  }
+
+  /* The big "X" stamp that flips visible when marked. */
+  .bingo-cell-stamp {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 3.5rem;
+    color: var(--rust);
+    opacity: 0;
+    transform: rotate(-12deg) scale(0.85);
+    transition: opacity 0.18s, transform 0.18s;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* ── Marked state ─────────────────────────────── */
+  .bingo-cell[data-marked='true'] {
+    border-color: var(--rust);
+    background: rgba(196, 98, 45, 0.06);
+  }
+
+  .bingo-cell[data-marked='true'] .bingo-cell-text {
+    color: var(--cream-dim);
+    text-decoration: line-through;
+    text-decoration-color: rgba(196, 98, 45, 0.5);
+  }
+
+  .bingo-cell[data-marked='true'] .bingo-cell-stamp {
+    opacity: 0.65;
+    transform: rotate(-8deg) scale(1);
+  }
+
+  /* ── FREE cell (always marked, can't toggle) ──── */
+  .bingo-cell[data-free='true'] {
+    cursor: default;
+    border-color: var(--amber);
+    background: rgba(212, 146, 42, 0.08);
+  }
+
+  .bingo-cell[data-free='true'] .bingo-cell-text {
+    text-decoration: none;
+    color: var(--amber);
+    font-weight: 500;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+  }
+
+  .bingo-cell[data-free='true'] .bingo-cell-stamp {
+    color: var(--amber);
+    opacity: 0.3;
+  }
+
+  /* ── Footer (status + reset) ──────────────────── */
+  .bingo-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--cream-dim);
+    text-transform: uppercase;
+  }
+
+  .bingo-status-live { display: none; color: var(--rust); font-weight: 500; }
+  .bingo-status-idle { display: inline; }
+
+  #bingo-section[data-bingo='true'] .bingo-status-live { display: inline; }
+  #bingo-section[data-bingo='true'] .bingo-status-idle { display: none; }
+
+  .bingo-reset {
+    background: transparent;
+    border: none;
+    color: var(--cream-dim);
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.15s;
+  }
+
+  .bingo-reset:hover { color: var(--amber); }
+
+  @media (max-width: 600px) {
+    .bingo-cell {
+      font-size: 0.5rem;
+      padding: 5px 3px;
+    }
+    .bingo-cell-stamp { font-size: 2.4rem; }
+    .bingo-cell[data-free='true'] .bingo-cell-text { font-size: 0.5rem; }
+  }
+</style>

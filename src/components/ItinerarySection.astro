@@ -1,0 +1,226 @@
+---
+import { itinerary } from '../data/itinerary';
+---
+
+<section id="itinerary-section">
+  <p class="section-label">03 &mdash; The itinerary</p>
+  <h2 class="section-title itinerary-title">
+    Three days. <em>One mission.</em>
+  </h2>
+
+  <div class="itinerary-grid">
+    {itinerary.map((day, dayIdx) => (
+      <article class="itinerary-day">
+        <header class="itinerary-day-header">
+          <span class="itinerary-day-num">D{dayIdx + 1}</span>
+          <div class="itinerary-day-titles">
+            <h3 class="itinerary-day-weekday">{day.weekday}</h3>
+            <p class="itinerary-day-date">{day.date}</p>
+          </div>
+        </header>
+
+        {day.motto && (
+          <p class="itinerary-day-motto">&ldquo;{day.motto}&rdquo;</p>
+        )}
+
+        <ol class="itinerary-items">
+          {day.items.map((item) => (
+            <li
+              class="itinerary-item"
+              data-confidence={item.confidence ?? 'firm'}
+            >
+              <span class="itinerary-time">{item.time}</span>
+              <span class="itinerary-body">
+                <span class="itinerary-label">{item.label}</span>
+                {item.note && (
+                  <span class="itinerary-note">{item.note}</span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  #itinerary-section {
+    max-width: 1080px;
+  }
+
+  .itinerary-title {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .itinerary-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  /* ── Three-column grid; collapses to stacked on mobile ── */
+  .itinerary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 880px) {
+    .itinerary-grid { grid-template-columns: 1fr; }
+  }
+
+  .itinerary-day {
+    border: 1px solid var(--border);
+    padding: 28px 26px;
+    background: rgba(255, 255, 255, 0.012);
+    position: relative;
+  }
+
+  /* Day header */
+  .itinerary-day-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .itinerary-day-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 3px 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .itinerary-day-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .itinerary-day-weekday {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+    margin: 0;
+  }
+
+  .itinerary-day-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    color: var(--cream-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .itinerary-day-motto {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--amber);
+    margin-bottom: 22px;
+    line-height: 1.4;
+  }
+
+  /* ── Time-blocked items ──────────────────────────── */
+  .itinerary-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .itinerary-item {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 14px;
+    align-items: start;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(122, 117, 108, 0.18);
+  }
+
+  .itinerary-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .itinerary-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+    padding-top: 3px;
+    text-align: right;
+  }
+
+  .itinerary-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .itinerary-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--cream);
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+  }
+
+  .itinerary-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.66rem;
+    color: var(--cream-dim);
+    line-height: 1.5;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Confidence pills via attribute selectors ────── */
+  .itinerary-item[data-confidence='tbd'] .itinerary-time {
+    color: var(--cream-dim);
+  }
+
+  .itinerary-item[data-confidence='tbd'] .itinerary-label::after {
+    content: 'TBD';
+    margin-left: 8px;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    padding: 2px 6px;
+    color: var(--cream-dim);
+    border: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .itinerary-item[data-confidence='classified'] .itinerary-time {
+    color: var(--rust);
+  }
+
+  .itinerary-item[data-confidence='classified'] .itinerary-label {
+    color: var(--cream-dim);
+  }
+
+  .itinerary-item[data-confidence='classified'] .itinerary-label::after {
+    content: 'CLASSIFIED';
+    margin-left: 8px;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    padding: 2px 6px;
+    color: var(--rust);
+    border: 1px solid var(--rust);
+    vertical-align: middle;
+  }
+
+  @media (max-width: 880px) {
+    .itinerary-day { padding: 24px 22px; }
+  }
+</style>

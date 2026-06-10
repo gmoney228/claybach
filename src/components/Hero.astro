@@ -1,15 +1,47 @@
 ---
+import { TRIP } from '../data/trip';
+
+// Format in Pacific Time so the date stays "July 24" regardless of build host TZ.
+const tz = 'America/Los_Angeles';
+const partsFor = (d: Date) =>
+  Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+      .formatToParts(d)
+      .map((p) => [p.type, p.value])
+  );
+
+const startParts = partsFor(TRIP.start);
+const endParts = partsFor(TRIP.end);
+const eyebrow = `${TRIP.destination} \u00b7 ${startParts.month} ${startParts.day}\u2013${endParts.day}, ${startParts.year}`;
 ---
+
 <section id="hero">
-  <p class="hero-eyebrow">Est. August 28, 2026 &mdash; San Clemente, CA</p>
+  <p class="hero-eyebrow">{eyebrow}</p>
   <h1 class="hero-title">
     The <em>Clay Ashworth</em><br />Bachelor Party
   </h1>
-  <p class="hero-subtitle">
-    We&rsquo;re picking the place. We&rsquo;re picking the date.<br />
-    Clay does not get a vote.
-  </p>
-  <a class="hero-cta" href="#globe-section">Pick a destination</a>
+
+  <ul class="hero-stats" aria-label="Trip stats">
+    <li class="hero-stat">
+      <span class="hero-stat-label">Insertion</span>
+      <span class="hero-stat-value">Fri 7.24</span>
+    </li>
+    <li class="hero-stat">
+      <span class="hero-stat-label">Extraction</span>
+      <span class="hero-stat-value">Sun 7.26</span>
+    </li>
+    <li class="hero-stat">
+      <span class="hero-stat-label">Theater</span>
+      <span class="hero-stat-value">Lake CDA &middot; ID</span>
+    </li>
+  </ul>
+
+  <a class="hero-cta" href="#itinerary-section">View the itinerary</a>
   <div class="hero-divider"></div>
 </section>
 
@@ -67,15 +99,46 @@
     color: var(--amber);
   }
 
-  .hero-subtitle {
-    margin-top: 28px;
+  /* ── Stat strip ───────────────────────────────── */
+  .hero-stats {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
+    display: flex;
+    gap: 32px;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 720px;
+  }
+
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .hero-stat:last-child { border-right: none; }
+
+  .hero-stat-label {
     font-family: 'DM Mono', monospace;
-    font-size: clamp(0.72rem, 1.8vw, 0.92rem);
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
     color: var(--cream-dim);
-    font-style: italic;
-    letter-spacing: 0.04em;
-    max-width: 560px;
-    line-height: 1.7;
+  }
+
+  .hero-stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: 0.005em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .hero-cta {
@@ -100,7 +163,7 @@
   }
 
   .hero-cta::after {
-    content: '↓';
+    content: '\u2193';
   }
 
   .hero-divider {
@@ -108,5 +171,11 @@
     width: 80px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  }
+
+  @media (max-width: 540px) {
+    .hero-stats { gap: 0; flex-wrap: nowrap; }
+    .hero-stat { padding: 0 14px; }
+    .hero-stat-value { font-size: 0.9rem; }
   }
 </style>

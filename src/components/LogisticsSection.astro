@@ -1,0 +1,125 @@
+---
+import { logistics } from '../data/logistics';
+---
+
+<section id="logistics-section">
+  <p class="section-label">06 &mdash; Logistics</p>
+  <h2 class="section-title logistics-title">
+    The boring (essential) stuff.
+  </h2>
+
+  <div class="logistics-grid">
+    {logistics.map((card) => {
+      const inner = (
+        <>
+          <header class="logistics-card-header">
+            <span class="logistics-card-label">{card.label}</span>
+            {card.pending && (
+              <span class="logistics-pending">TBD</span>
+            )}
+          </header>
+          <p class="logistics-card-value">{card.value}</p>
+          {card.meta && (
+            <p class="logistics-card-meta">{card.meta}</p>
+          )}
+        </>
+      );
+
+      return card.href ? (
+        <a class="logistics-card" href={card.href} target="_blank" rel="noreferrer noopener">
+          {inner}
+        </a>
+      ) : (
+        <article class="logistics-card">{inner}</article>
+      );
+    })}
+  </div>
+</section>
+
+<style>
+  #logistics-section {
+    max-width: 1080px;
+  }
+
+  .logistics-title {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .logistics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 880px) {
+    .logistics-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 540px) {
+    .logistics-grid { grid-template-columns: 1fr; }
+  }
+
+  .logistics-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.012);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.18s, background 0.18s;
+  }
+
+  a.logistics-card:hover {
+    border-color: var(--amber);
+    background: rgba(212, 146, 42, 0.04);
+  }
+
+  .logistics-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .logistics-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .logistics-pending {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.25em;
+    color: var(--cream-dim);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    text-transform: uppercase;
+  }
+
+  .logistics-card-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+  }
+
+  .logistics-card-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.66rem;
+    color: var(--cream-dim);
+    line-height: 1.55;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+</style>

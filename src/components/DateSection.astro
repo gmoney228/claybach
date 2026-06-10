@@ -1,23 +1,43 @@
 ---
+import { TRIP } from '../data/trip';
+
+const tz = 'America/Los_Angeles';
+const startStr = new Intl.DateTimeFormat('en-US', {
+  timeZone: tz,
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  hour12: false,
+}).format(TRIP.start);
 ---
+
 <section id="date-section">
-  <p class="section-label">02 &mdash; Lock the date</p>
+  <p class="section-label">07 &mdash; T&ndash;Minus</p>
+
   <div class="countdown-display">
-    <span class="t-label">T&ndash;Minus</span>
-    <span class="t-value">???</span>
-    <span class="t-label t-label-units">days</span>
+    <span class="t-label" data-countdown-label>T&ndash;Minus</span>
+    <span class="t-value" data-countdown-value>&mdash;</span>
+    <span class="t-label t-label-units" data-countdown-units>days</span>
   </div>
 
-  <div class="decision-progress" role="progressbar" aria-valuenow="4" aria-valuemin="0" aria-valuemax="100">
+  <p class="countdown-target">Boots on the ground &mdash; {startStr} PT</p>
+
+  <div class="decision-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
     <div class="progress-label">
-      <span>Decision progress</span>
-      <span class="progress-pct">04%</span>
+      <span>Countdown progress</span>
+      <span class="progress-pct" data-progress-pct>00%</span>
     </div>
     <div class="progress-track">
-      <div class="progress-fill"></div>
+      <div class="progress-fill" data-progress-fill></div>
     </div>
   </div>
 </section>
+
+<script>
+  import { initCountdown } from '../scripts/countdown';
+  initCountdown();
+</script>
 
 <style>
   #date-section {
@@ -47,7 +67,10 @@
     margin-bottom: 8px;
   }
 
-  .countdown-display .t-value { color: var(--rust); }
+  .countdown-display .t-value {
+    color: var(--rust);
+    font-variant-numeric: tabular-nums;
+  }
 
   .countdown-display .t-label-units {
     font-size: 0.25em;
@@ -55,8 +78,18 @@
     letter-spacing: 0.3em;
   }
 
+  .countdown-target {
+    margin-top: 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--cream-dim);
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
   .decision-progress {
-    margin: 44px auto 0;
+    margin: 36px auto 0;
     max-width: 440px;
     text-align: left;
   }
@@ -88,8 +121,9 @@
   }
 
   .progress-fill {
-    width: 4%;
+    width: 0%;
     height: 100%;
-    background: var(--amber);
+    background: linear-gradient(90deg, var(--rust), var(--amber));
+    transition: width 0.6s ease;
   }
 </style>

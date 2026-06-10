@@ -1,12 +1,14 @@
 ---
+import { TRIP } from '../data/trip';
 ---
+
 <section id="globe-section">
-  <p class="section-label">01 &mdash; Pick the place</p>
+  <p class="section-label">02 &mdash; The map</p>
   <h2 class="section-title globe-title">
-    Spin the globe.<br /><em>Let it decide for us.</em>
+    The wheel <em>landed</em>.<br />Coeur d&rsquo;Alene took the call.
   </h2>
 
-  <div class="globe-stage" aria-label="World globe with four candidate destinations">
+  <div class="globe-stage" aria-label="World globe with the locked-in destination">
     <svg id="globe-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
       <defs>
         <radialGradient id="sphereGradient" cx="38%" cy="35%" r="70%">
@@ -31,9 +33,9 @@
   </div>
 
   <button class="spin-btn" id="spinBtn" type="button">
-    <span>Spin the wheel</span>
+    <span>Why CDA won</span>
   </button>
-  <p class="globe-hint">Final answer rendered in approx. 2 seconds.</p>
+  <p class="globe-hint">Spin the globe. Same answer every time.</p>
 </section>
 
 <div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
@@ -43,31 +45,35 @@
     <p class="modal-line" id="modal-line"></p>
 
     <div class="scouting-report" id="scouting-report" hidden>
-      <p class="scouting-title">Yakima &mdash; Scouting Report</p>
+      <p class="scouting-title">{TRIP.destination} &mdash; Field Intel</p>
       <div class="scouting-stats">
         <div class="stat-row">
-          <span class="stat-label">Tools</span>
-          <span class="stat-value"><span class="star-filled">&#9733;&#9733;</span><span class="star-empty">&#9734;&#9734;&#9734;</span></span>
+          <span class="stat-label">Lake size</span>
+          <span class="stat-value">25 mi long &middot; deep, cold, navigable</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Vibes</span>
-          <span class="stat-value"><span class="star-filled">&#9733;</span><span class="star-empty">&#9734;&#9734;&#9734;&#9734;</span></span>
+          <span class="stat-label">Downtown</span>
+          <span class="stat-value">Walkable. Bars dense. Strip thin.</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Nostalgia Factor</span>
-          <span class="stat-value"><span class="star-filled">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
+          <span class="stat-label">From {TRIP.airportCode}</span>
+          <span class="stat-value">~35 min drive east on I-90</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Threat level</span>
+          <span class="stat-value"><span class="star-filled">&#9733;&#9733;&#9733;</span><span class="star-empty">&#9734;&#9734;</span></span>
         </div>
       </div>
       <p class="scouting-notes">
         <span class="notes-label">Notes:</span>
-        Subject has prior exposure to this market. Familiarity breeds contempt.
-        Recommend only if group enjoys Apple Cup energy and nostalgia-induced existential crises.
+        Lake recreation by day, country bar to dive bar pipeline by night. Strong cell signal
+        if Clay tries to escape. Recommend full deployment 7.24 \u2192 7.26.
       </p>
     </div>
 
     <div class="modal-actions">
       <button class="modal-btn" id="modal-respin" type="button">Spin again</button>
-      <button class="modal-btn primary" id="modal-lock" type="button">Lock it in</button>
+      <button class="modal-btn primary" id="modal-lock" type="button">Confirmed</button>
     </div>
   </div>
 </div>
@@ -85,6 +91,11 @@
     margin-left: auto;
     margin-right: auto;
     max-width: 640px;
+  }
+
+  .globe-title em {
+    font-style: italic;
+    color: var(--amber);
   }
 
   .globe-stage {
@@ -128,9 +139,24 @@
     stroke-width: 0.4;
   }
 
+  /* ── Pin styling ─────────────────────────────────── */
+  /* Non-winner pins are persistently dim now that the decision is locked. */
+  .pin {
+    opacity: 0.32;
+    transition: opacity 0.25s ease;
+  }
+
+  .pin.winner-pin {
+    opacity: 1;
+  }
+
   .pin-ripple {
     fill: var(--rust);
     opacity: 0;
+  }
+
+  /* Ripple only animates on the winner — it would be noise on losers. */
+  .pin.winner-pin .pin-ripple {
     animation: pin-ripple 2.4s ease-out infinite;
   }
 
@@ -143,11 +169,14 @@
     fill: var(--rust);
     stroke: #1a0f08;
     stroke-width: 0.6;
-    filter: drop-shadow(0 0 4px rgba(196, 98, 45, 0.8));
+  }
+
+  .pin.winner-pin .pin-dot {
+    fill: var(--amber);
+    filter: drop-shadow(0 0 6px rgba(212, 146, 42, 0.85));
   }
 
   .pin-dot.winner {
-    fill: var(--amber);
     animation: winner-pulse 1.4s ease-in-out infinite;
   }
 
@@ -162,6 +191,8 @@
     opacity: 0.45;
     pointer-events: none;
   }
+
+  .pin.winner-pin .pin-leader { opacity: 0.85; }
 
   .pin-label {
     font-family: 'DM Mono', monospace;
@@ -260,7 +291,7 @@
     margin-bottom: 14px;
   }
 
-  .modal-eyebrow.hometown {
+  .modal-eyebrow.locked {
     color: #0e0d0b;
     background: var(--amber);
     display: inline-block;
@@ -268,7 +299,7 @@
     letter-spacing: 0.3em;
   }
 
-  /* ── Scouting report card (Yakima only) ── */
+  /* ── Field intel card ── */
   .scouting-report {
     margin: 28px auto 0;
     padding: 22px 24px 20px;
@@ -307,14 +338,17 @@
   .stat-label {
     color: var(--cream-dim);
     letter-spacing: 0.05em;
+    flex-shrink: 0;
   }
 
   .stat-label::after { content: ':'; }
 
   .stat-value {
-    letter-spacing: 0.18em;
-    font-size: 0.85rem;
-    line-height: 1;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: right;
+    color: var(--cream);
   }
 
   .star-filled { color: var(--amber); }

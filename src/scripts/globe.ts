@@ -12,6 +12,7 @@ import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import { track } from '@vercel/analytics';
 
 import { destinations, type Destination } from '../data/destinations';
+import { TRIP } from '../data/trip';
 
 interface InitOptions {
   /** Path to the world land topojson, served from /public. */
@@ -20,8 +21,10 @@ interface InitOptions {
 
 /**
  * Boots the orthographic globe inside the markup rendered by GlobeSection.astro.
- * Continuously rotates around the polar axis, lets the user spin to a random
- * destination, and surfaces a modal with the result.
+ *
+ * Post-decision behavior: the winning destination is highlighted permanently,
+ * losing destinations stay dimmed on the globe, and the "spin" button always
+ * lands on the winner and opens a Field Intel card.
  */
 export function initGlobe({ worldUrl }: InitOptions): void {
   const svg     = document.getElementById('globe-svg');
@@ -46,6 +49,12 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     return;
   }
 
+  const winner =
+    destinations.find((d) => d.name === TRIP.winningDestinationName) ?? null;
+  if (!winner) {
+    console.warn('[globe] winning destination not found in dataset');
+  }
+
   const projection: GeoProjection = geoOrthographic()
     .scale(170)
     .translate([200, 200])
@@ -57,7 +66,6 @@ export function initGlobe({ worldUrl }: InitOptions): void {
 
   let landFeatures: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
   let spinning = false;
-  let landed: Destination | null = null;
   let baseLambda = 110;
   const basePhi = -25;
   let lastTs: number | null = null;
@@ -72,7 +80,8 @@ export function initGlobe({ worldUrl }: InitOptions): void {
   // Build one <g class="pin"> per destination up-front; we just transform/style on each frame.
   for (const d of destinations) {
     const g = document.createElementNS(SVG_NS, 'g');
-    g.setAttribute('class', 'pin');
+    const isWinner = winner != null && d.name === winner.name;
+    g.setAttribute('class', isWinner ? 'pin winner-pin' : 'pin');
 
     const [lx, ly] = d.labelOffset;
     // Leader line starts just outside the dot edge and ends just shy of the text.
@@ -97,7 +106,7 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     ripple.setAttribute('cy', '0');
 
     const dot = document.createElementNS(SVG_NS, 'circle');
-    dot.setAttribute('class', 'pin-dot');
+    dot.setAttribute('class', isWinner ? 'pin-dot winner' : 'pin-dot');
     dot.setAttribute('cx', '0');
     dot.setAttribute('cy', '0');
     dot.setAttribute('r', '3.2');
@@ -137,14 +146,18 @@ export function initGlobe({ worldUrl }: InitOptions): void {
       const [x, y] = projected ?? [0, 0];
 
       nodes.group.setAttribute('transform', `translate(${x}, ${y})`);
-      nodes.group.style.opacity = visible ? '1' : '0';
       nodes.group.style.pointerEvents = visible ? 'auto' : 'none';
 
-      nodes.dot.classList.toggle('winner', landed?.name === d.name);
+      // Visibility on the back of the globe still hides the pin completely.
+      // Winner stays at full brightness on the front; losers stay dim via CSS.
+      const baseOpacity = winner && d.name === winner.name ? 1 : 0.32;
+      nodes.group.style.opacity = visible ? String(baseOpacity) : '0';
 
-      let labelOpacity = 0.9;
-      if (!visible) labelOpacity = 0;
-      else if (landed) labelOpacity = landed.name === d.name ? 1 : 0.35;
+      // Labels: only the winner shows persistently. Losers' labels fade with the pin.
+      let labelOpacity = 0;
+      if (visible) {
+        labelOpacity = winner && d.name === winner.name ? 1 : 0.5;
+      }
       nodes.label.style.opacity = String(labelOpacity);
     }
   }
@@ -180,17 +193,15 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     return 1 - Math.pow(1 - t, 3);
   }
 
+  // Post-decision: spin always lands on the winner.
   function spin(): void {
-    if (spinning) return;
+    if (spinning || !winner) return;
     spinning = true;
-    landed = null;
     spinBtn!.disabled = true;
 
     track('spin_globe');
 
-    const pick = destinations[Math.floor(Math.random() * destinations.length)]!;
-
-    const targetLambda = -pick.coords[0];
+    const targetLambda = -winner.coords[0];
     const startLambda = projection.rotate()[0];
 
     let lambdaDelta = (((targetLambda - startLambda) % 360) + 360) % 360;
@@ -209,15 +220,11 @@ export function initGlobe({ worldUrl }: InitOptions): void {
       if (t < 1) {
         requestAnimationFrame(step);
       } else {
-        landed = pick;
         renderPins();
-        showModal(pick);
+        showModal(winner!);
         baseLambda = ((lambda % 360) + 360) % 360;
 
-        track('spin_result', { destination: pick.name });
-        if (pick.isHometown) {
-          track('hometown_landed', { destination: pick.name });
-        }
+        track('spin_result', { destination: winner!.name });
       }
     }
     requestAnimationFrame(step);
@@ -227,15 +234,10 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     modalDest!.innerHTML = `<em>${pick.name}</em>.`;
     modalLine!.textContent = pick.line;
 
-    if (pick.isHometown) {
-      modalEyebrow!.textContent = 'Hometown';
-      modalEyebrow!.classList.add('hometown');
-      if (scoutingCard) scoutingCard.hidden = false;
-    } else {
-      modalEyebrow!.textContent = 'The wheel has spoken';
-      modalEyebrow!.classList.remove('hometown');
-      if (scoutingCard) scoutingCard.hidden = true;
-    }
+    modalEyebrow!.textContent = 'Destination locked';
+    modalEyebrow!.classList.add('locked');
+    // Field Intel card is always shown for the winner.
+    if (scoutingCard) scoutingCard.hidden = false;
 
     modal!.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -263,7 +265,7 @@ export function initGlobe({ worldUrl }: InitOptions): void {
     setTimeout(spin, 180);
   });
   modalLock.addEventListener('click', () => {
-    if (landed) track('modal_lock', { destination: landed.name });
+    if (winner) track('modal_lock', { destination: winner.name });
     closeModal({ resume: false });
     spinBtn.disabled = false;
     spinning = false;
